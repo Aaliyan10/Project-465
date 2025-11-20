@@ -1,107 +1,167 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿#nullable disable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Movies.APP.Domain;
+using MediatR;
+using CORE.APP.Models;
+using Movies.APP.Features.Genres;
 
+//Generated from Custom Microservices Template.
 namespace Movies.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class GenresController : ControllerBase
     {
-        private readonly MoviesDb _context;
+        private readonly ILogger<GenresController> _logger;
+        private readonly IMediator _mediator;
 
-        public GenresController(MoviesDb context)
+        // Constructor: injects logger to log the errors to Kestrel Console or Output Window and mediator
+        public GenresController(ILogger<GenresController> logger, IMediator mediator)
         {
-            _context = context;
+            _logger = logger;
+            _mediator = mediator;
         }
 
         // GET: api/Genres
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Genre>>> GetGenres()
+        public async Task<IActionResult> Get()
         {
-            return await _context.Genres.ToListAsync();
+            try
+            {
+                // Send a query request to get query response
+                var response = await _mediator.Send(new GenreQueryRequest());
+                // Convert the query response to a list
+                var list = await response.ToListAsync();
+                // If there are items, return them with 200 OK
+                if (list.Any())
+                    return Ok(list);
+                // If no items found, return 204 No Content
+                return NoContent();
+            }
+            catch (Exception exception)
+            {
+                // Log the exception
+                _logger.LogError("GenresGet Exception: " + exception.Message);
+                // Return 500 Internal Server Error with an error command response with message
+                return StatusCode(StatusCodes.Status500InternalServerError, new CommandResponse(false, "An exception occured during GenresGet.")); 
+            }
         }
 
         // GET: api/Genres/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Genre>> GetGenre(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            var genre = await _context.Genres.FindAsync(id);
-
-            if (genre == null)
-            {
-                return NotFound();
-            }
-
-            return genre;
-        }
-
-        // PUT: api/Genres/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutGenre(int id, Genre genre)
-        {
-            if (id != genre.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(genre).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                // Send a query request to get query response
+                var response = await _mediator.Send(new GenreQueryRequest());
+                // Find the item with the given id
+                var item = await response.SingleOrDefaultAsync(r => r.Id == id);
+                // If item found, return it with 200 OK
+                if (item is not null)
+                    return Ok(item);
+                // If item not found, return 204 No Content
+                return NoContent();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception exception)
             {
-                if (!GenreExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                // Log the exception
+                _logger.LogError("GenresGetById Exception: " + exception.Message);
+                // Return 500 Internal Server Error with an error command response with message
+                return StatusCode(StatusCodes.Status500InternalServerError, new CommandResponse(false, "An exception occured during GenresGetById.")); 
             }
-
-            return NoContent();
         }
 
-        // POST: api/Genres
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+		// POST: api/Genres
         [HttpPost]
-        public async Task<ActionResult<Genre>> PostGenre(Genre genre)
+        public async Task<IActionResult> Post(GenreCreateRequest request)
         {
-            _context.Genres.Add(genre);
-            await _context.SaveChangesAsync();
+            try
+            {
+                // Check if the request model is valid through data annotations
+                if (ModelState.IsValid)
+                {
+                    // Send the create request
+                    var response = await _mediator.Send(request);
+                    // If creation is successful, return 200 OK with success command response
+                    if (response.IsSuccessful)
+                    {
+                        //return CreatedAtAction(nameof(Get), new { id = response.Id }, response);
+                        return Ok(response);
+                    }
+                    // If creation failed, add error command response message to model state
+                    ModelState.AddModelError("GenresPost", response.Message);
+                }
+                // Return 400 Bad Request with all data annotation validation error messages and the error command response message if added seperated by |
+                return BadRequest(new CommandResponse(false, string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
+            }
+            catch (Exception exception)
+            {
+                // Log the exception
+                _logger.LogError("GenresPost Exception: " + exception.Message);
+                // Return 500 Internal Server Error with an error command response with message
+                return StatusCode(StatusCodes.Status500InternalServerError, new CommandResponse(false, "An exception occured during GenresPost.")); 
+            }
+        }
 
-            return CreatedAtAction("GetGenre", new { id = genre.Id }, genre);
+        // PUT: api/Genres
+        [HttpPut]
+        public async Task<IActionResult> Put(GenreUpdateRequest request)
+        {
+            try
+            {
+                // Check if the request model is valid through data annotations
+                if (ModelState.IsValid)
+                {
+                    // Send the update request
+                    var response = await _mediator.Send(request);
+                    // If update is successful, return 200 OK with success command response
+                    if (response.IsSuccessful)
+                    {
+                        //return NoContent();
+                        return Ok(response);
+                    }
+                    // If update failed, add error command response message to model state
+                    ModelState.AddModelError("GenresPut", response.Message);
+                }
+                // Return 400 Bad Request with all data annotation validation error messages and the error command response message if added seperated by |
+                return BadRequest(new CommandResponse(false, string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
+            }
+            catch (Exception exception)
+            {
+                // Log the exception
+                _logger.LogError("GenresPut Exception: " + exception.Message);
+                // Return 500 Internal Server Error with an error command response with message
+                return StatusCode(StatusCodes.Status500InternalServerError, new CommandResponse(false, "An exception occured during GenresPut.")); 
+            }
         }
 
         // DELETE: api/Genres/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteGenre(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre == null)
+            try
             {
-                return NotFound();
+                // Send the delete request
+                var response = await _mediator.Send(new GenreDeleteRequest() { Id = id });
+                // If delete is successful, return 200 OK with success command response
+                if (response.IsSuccessful)
+                {
+                    //return NoContent();
+                    return Ok(response);
+                }
+                // If delete failed, add error command response message to model state
+                ModelState.AddModelError("GenresDelete", response.Message);
+                // Return 400 Bad Request with the error command response message
+                return BadRequest(new CommandResponse(false, string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))));
             }
-
-            _context.Genres.Remove(genre);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception exception)
+            {
+                // Log the exception
+                _logger.LogError("GenresDelete Exception: " + exception.Message);
+                // Return 500 Internal Server Error with an error command response with message
+                return StatusCode(StatusCodes.Status500InternalServerError, new CommandResponse(false, "An exception occured during GenresDelete.")); 
+            }
         }
-
-        private bool GenreExists(int id)
-        {
-            return _context.Genres.Any(e => e.Id == id);
-        }
-    }
+	}
 }

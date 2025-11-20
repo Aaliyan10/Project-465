@@ -52,7 +52,7 @@ namespace Movies.APP.Features.Directors
 
                     MovieCount = d.Movies.Count,
                     Movies = string.Join(", ", d.Movies.Select(m => m.Name)),
-                    FullName= d.FirstName + "" + d.LastName,
+                    FullName= d.FirstName + " " + d.LastName,
 
                     MoviesList = d.Movies.Select(m => new MovieQueryResponse
                     {

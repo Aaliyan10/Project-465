@@ -16,7 +16,6 @@ namespace Movies.APP.Features.Movies
         public decimal? TotalRevenueStart { get; set; }
         public decimal? TotalRevenueEnd { get; set; }
         public int? DirectorId { get; set; }
-        public List<int> GenreIds { get; set; } = new List<int>();
     }
     public class MovieQueryResponse : Response
     {
@@ -50,8 +49,7 @@ namespace Movies.APP.Features.Movies
             return base.Query(isNoTracking) 
                 .Include(u => u.Director)
                 .Include(u => u.MovieGenres).ThenInclude(ur => ur.Genre)
-                .OrderByDescending(u => u.TotalRevenue) 
-                .ThenBy(u => u.ReleaseDate) 
+                .OrderByDescending(u => u.ReleaseDate) 
                 .ThenBy(u => u.Name); 
 
         }

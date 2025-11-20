@@ -9,7 +9,11 @@ builder.AddServiceDefaults();
 
 var connectionString = builder.Configuration.GetConnectionString(nameof(MoviesDb));
 builder.Services.AddDbContext<DbContext, MoviesDb>(options => options.UseSqlite(connectionString));
-
+// MediatR
+foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+{
+    builder.Services.AddMediatR(config => config.RegisterServicesFromAssemblies(assembly));
+}
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
