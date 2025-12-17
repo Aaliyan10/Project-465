@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using MediatR;
 using CORE.APP.Models;
 using Movies.APP.Features.Directors;
+using Microsoft.AspNetCore.Authorization;
 
 //Generated from Custom Microservices Template.
 namespace Movies.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class DirectorsController : ControllerBase
     {
         private readonly ILogger<DirectorsController> _logger;

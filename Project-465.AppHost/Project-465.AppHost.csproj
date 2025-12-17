@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
 
@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Movies.API\Movies.API.csproj" />
+    <ProjectReference Include="..\Users.API\Users.API.csproj" />
   </ItemGroup>
 
 </Project>

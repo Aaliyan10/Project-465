@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using MediatR;
 using CORE.APP.Models;
 using Movies.APP.Features.Movies;
+using Microsoft.AspNetCore.Authorization;
 
 //Generated from Custom Microservices Template.
 namespace Movies.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class MoviesController : ControllerBase
     {
         private readonly ILogger<MoviesController> _logger;
@@ -24,6 +26,7 @@ namespace Movies.API.Controllers
 
         // GET: api/Movies
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
             try
@@ -49,6 +52,8 @@ namespace Movies.API.Controllers
 
         // GET: api/Movies/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
+
         public async Task<IActionResult> Get(int id)
         {
             try
